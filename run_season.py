@@ -34,12 +34,18 @@ class TeamManager(object):
         for name, team in self.teams.items():
             team_list.append(team)
 
+        print('|------|----------------------|-----------|')
+        print('| Rank | Team                 | Elo Score |')
+        print('|------|----------------------|-----------|')
+
         team_list.sort(key=lambda team: team.score, reverse=True)
         rank = 0
         for team in team_list:
             rank += 1
 
-            print(rank, team.name, '%.4f'%team.score)
+            print('| %4d | %20s | %.4f |' % (rank, team.name, team.score))
+
+        print('|------|----------------------|-----------|')
 
 
 class Game(object):
@@ -64,7 +70,8 @@ class Game(object):
         self.team_2.update_score(r_2)
 
 
-def run_season(csv_file_path='data.csv'):
+def run_season(season='2015'):
+    csv_file_path = 'data/%s.season.csv' % season
     team_manager = TeamManager()
 
     with open(csv_file_path, 'rw+') as csvfile:
@@ -74,7 +81,6 @@ def run_season(csv_file_path='data.csv'):
         next(reader, None)
 
         for row in reader:
-            week = int(row[0])
 
             team_1 = team_manager.get_or_create_team(row[4])
             team_2 = team_manager.get_or_create_team(row[6])
