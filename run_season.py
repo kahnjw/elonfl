@@ -43,7 +43,7 @@ class TeamManager(object):
         for team in team_list:
             rank += 1
 
-            print('| %4d | %20s | %.4f |' % (rank, team.name, team.score))
+            print('| %4d | %20s | %9.4f |' % (rank, team.name, team.score))
 
         print('|------|----------------------|-----------|')
 

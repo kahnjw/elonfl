@@ -1,6 +1,6 @@
 from math import fabs, log, pow
 
-K = 20
+K = 18
 
 
 def calculate_points(score_1, score_2):
@@ -13,15 +13,18 @@ def calculate_points(score_1, score_2):
     return (0.5, 0.5)
 
 
-def calc_k(score_1, score_2):
+def calc_k(r_1, r_2, score_1, score_2):
     # Source: http://fivethirtyeight.com/datalab/introducing-nfl-elo-ratings/
     pd = fabs(score_1 - score_2)
 
-    return log(pd + 1) * K
+    ELOW = r_1 if score_1 > score_2 else r_2
+    ELOL = r_2 if score_1 > score_2 else r_1
+
+    return (log(pd + 1) * K) * (2.2 / ((ELOW - ELOL) * 0.001 + 2.2))
 
 
 def rerank(r_1, r_2, score_1, score_2):
-    k = calc_k(score_1, score_2)
+    k = calc_k(r_1, r_2, score_1, score_2)
     Rank_1 = pow(10, r_1 / 400)
     Rank_2 = pow(10, r_2 / 400)
 
