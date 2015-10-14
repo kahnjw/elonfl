@@ -6,12 +6,41 @@ class Team(object):
     def __init__(self, name):
         self.name = name
         self.score = 1200
+        self.wins = 0
+        self.losses = 0
+        self.ties = 0
+        self.pd_list = []
 
     def update_score(self, new_score):
         self.score = new_score
 
     def discount_score(self):
         self.score = (self.score + 2400) / 3
+        self.wins = 0
+        self.losses = 0
+        self.ties = 0
+        self.pd_list = []
+
+    def win(self):
+        self.wins += 1
+
+    def loss(self):
+        self.losses += 1
+
+    def tie(self):
+        self.ties += 1
+
+    def record(self):
+        if self.ties == 0:
+            return '%d-%d' % (self.wins, self.losses)
+
+        return '%d-%d-%d' % (self.wins, self.losses, self.ties)
+
+    def add_pd(self, pd):
+        self.pd_list.append(pd)
+
+    def pd(self):
+        return float(sum(self.pd_list)) / len(self.pd_list)
 
 
 class TeamManager(object):
@@ -41,18 +70,22 @@ class TeamManager(object):
         for name, team in self.teams.items():
             team_list.append(team)
 
-        print('|------|----------------------|-----------|')
-        print('| Rank | Team                 | Elo Score |')
-        print('|------|----------------------|-----------|')
+        gaurd = '|------|----------------------|--------|-------|-----------|'
+
+        print(gaurd)
+        print('| Rank | Team                 | Record | PD    | Elo Score |')
+        print(gaurd)
 
         team_list.sort(key=lambda team: team.score, reverse=True)
         rank = 0
         for team in team_list:
             rank += 1
 
-            print('| %4d | %20s | %9.4f |' % (rank, team.name, team.score))
+            team_data = (rank, team.name, team.record(), team.pd(), team.score)
 
-        print('|------|----------------------|-----------|')
+            print('| %4d | %20s | %6s | %5.1f | %9.4f |' % team_data)
+
+        print(gaurd)
 
 
 class Game(object):
@@ -72,6 +105,19 @@ class Game(object):
     def set_outcome(self, score_team_1, score_team_2):
         r_1, r_2 = rerank(self.team_1.score, self.team_2.score, score_team_1,
                           score_team_2)
+
+        if score_team_1 > score_team_2:
+            self.team_1.win()
+            self.team_2.loss()
+        elif score_team_1 < score_team_2:
+            self.team_2.win()
+            self.team_1.loss()
+        else:
+            self.team_2.tie()
+            self.team_1.tie()
+
+        self.team_1.add_pd(score_team_1 - score_team_2)
+        self.team_2.add_pd(score_team_2 - score_team_1)
 
         self.team_1.update_score(r_1)
         self.team_2.update_score(r_2)
