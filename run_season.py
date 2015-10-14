@@ -3,12 +3,15 @@ from rerank import rerank
 
 
 class Team(object):
-    def __init__(self, name, score=1200.0):
+    def __init__(self, name):
         self.name = name
         self.score = 1200
 
     def update_score(self, new_score):
         self.score = new_score
+
+    def discount_score(self):
+        self.score = (self.score + 2400) / 3
 
 
 class TeamManager(object):
@@ -27,6 +30,10 @@ class TeamManager(object):
             return team
 
         return self.create_team(team_name)
+
+    def discount_season(self):
+        for name, team in self.teams.items():
+            team.discount_score()
 
     def print_ranking(self):
         team_list = list()
@@ -70,14 +77,22 @@ class Game(object):
         self.team_2.update_score(r_2)
 
 
-def run_season(season='2015'):
+def run_season(season='2015', last=False):
+    season_int = int(season)
+
+    if season_int != 2013 and not last:
+        team_manager = run_season(str(season_int - 1), True)
+        team_manager.discount_season()
+    else:
+        team_manager = TeamManager()
+
     csv_file_path = 'data/%s.season.csv' % season
     team_manager = TeamManager()
 
     with open(csv_file_path, 'rw+') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='|')
 
-        # The first row of CSV, is column information
+        # The first row of CSV is column information
         next(reader, None)
 
         for row in reader:
@@ -91,4 +106,7 @@ def run_season(season='2015'):
             game = Game(team_1, team_2)
             game.set_outcome(score_team_1, score_team_2)
 
-        team_manager.print_ranking()
+        if not last:
+            team_manager.print_ranking()
+
+    return team_manager
