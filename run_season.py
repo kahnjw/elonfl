@@ -80,7 +80,7 @@ class Game(object):
 def run_season(season='2015', last=False):
     season_int = int(season)
 
-    if season_int != 2013 and not last:
+    if season_int != 2011 and not last:
         team_manager = run_season(str(season_int - 1), True)
         team_manager.discount_season()
     else:
