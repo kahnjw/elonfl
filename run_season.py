@@ -10,6 +10,8 @@ class Team(object):
         self.losses = 0
         self.ties = 0
         self.pd_list = []
+        self.points_scored_list = []
+        self.points_allowed_list = []
 
     def update_score(self, new_score):
         self.score = new_score
@@ -20,6 +22,8 @@ class Team(object):
         self.losses = 0
         self.ties = 0
         self.pd_list = []
+        self.points_scored_list = []
+        self.points_allowed_list = []
 
     def win(self):
         self.wins += 1
@@ -36,11 +40,21 @@ class Team(object):
 
         return '%d-%d-%d' % (self.wins, self.losses, self.ties)
 
-    def add_pd(self, pd):
-        self.pd_list.append(pd)
+    def add_score(self, _for, against):
+        self.pd_list.append(_for - against)
+        self.points_scored_list.append(_for)
+        self.points_allowed_list.append(against)
 
     def pd(self):
         return float(sum(self.pd_list)) / len(self.pd_list)
+
+    def points_for(self):
+        return float(sum(self.points_scored_list)) / len(
+            self.points_scored_list)
+
+    def points_against(self):
+        return float(sum(self.points_allowed_list)) / len(
+            self.points_allowed_list)
 
 
 class TeamManager(object):
@@ -70,10 +84,10 @@ class TeamManager(object):
         for name, team in self.teams.items():
             team_list.append(team)
 
-        gaurd = '|------|----------------------|--------|-------|-----------|'
+        gaurd = '|------|----------------------|--------|-------|----------|----------|-----------|'
 
         print(gaurd)
-        print('| Rank | Team                 | Record | PD    | Elo Score |')
+        print('| Rank | Team                 | Record | PD    | Pts For  | Pts Agst | Elo Score |')
         print(gaurd)
 
         team_list.sort(key=lambda team: team.score, reverse=True)
@@ -81,9 +95,10 @@ class TeamManager(object):
         for team in team_list:
             rank += 1
 
-            team_data = (rank, team.name, team.record(), team.pd(), team.score)
+            team_data = (rank, team.name, team.record(), team.pd(),
+                         team.points_for(), team.points_against(), team.score)
 
-            print('| %4d | %20s | %6s | %5.1f | %9.4f |' % team_data)
+            print('| %4d | %20s | %6s | %5.1f | %8.1f | %8.1f | %9.4f |' % team_data)
 
         print(gaurd)
 
@@ -116,8 +131,8 @@ class Game(object):
             self.team_2.tie()
             self.team_1.tie()
 
-        self.team_1.add_pd(score_team_1 - score_team_2)
-        self.team_2.add_pd(score_team_2 - score_team_1)
+        self.team_1.add_score(score_team_1, score_team_2)
+        self.team_2.add_score(score_team_2, score_team_1)
 
         self.team_1.update_score(r_1)
         self.team_2.update_score(r_2)
